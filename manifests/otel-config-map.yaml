@@ -1,0 +1,35 @@
+apiVersion: v1
+data:
+  relay: |
+    receivers:
+      customkafka:
+        brokers: 10.111.75.222:9092
+        topic: customdata
+        protocol_version: 2.0.0
+        encoding: custom
+    exporters:
+      logging:
+        verbosity: detailed
+      prometheusremotewrite:
+        endpoint: "http://10.104.89.249:19291/api/v1/receive"
+        tls:
+          insecure: false
+          insecure_skip_verify: true
+        remote_write_queue:
+          enabled: true
+          queue_size: 100
+        external_labels:
+          env: test
+    service:
+      pipelines:
+        metrics:
+          receivers:
+            - customkafka
+          exporters:
+            - logging
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/instance: otelcollector
+    app.kubernetes.io/name: opentelemetry-collector
+  name: opentelemetry-collector-statefulset
